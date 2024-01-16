@@ -1,0 +1,4 @@
+packages:
+  - wasm-sys/pkg
+  - wasm
+  - frontend

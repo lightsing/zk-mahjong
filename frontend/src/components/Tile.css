@@ -1,0 +1,11 @@
+.tile {
+    font-family: GLMahjongTile;
+    display: inline-block;
+    width: 30px;
+    height: 40px;
+    background-color: white;
+    border-radius: 5px;
+    font-size: 30px;
+    line-height: 52px;
+    border: 1px solid orange;
+}

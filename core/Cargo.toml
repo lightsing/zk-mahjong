@@ -1,0 +1,22 @@
+[package]
+name = "zk-mahjong-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+ff = { version = "0.13", features = ["derive"] }
+rand = "0.8"
+getrandom = { version = "0.2", features = ["js"] }
+phf = { version = "0.11", default-features = false }
+phf_shared = { version = "0.11", default-features = false }
+log = "0.4"
+serde = { version = "1.0.195", features = ["derive"] }
+num-bigint = "0.4.4"
+
+[dev-dependencies]
+hex = "0.4"
+phf = { version = "0.11", default-features = false }
+phf_codegen = "0.11"
