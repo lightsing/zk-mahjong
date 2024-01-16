@@ -6,5 +6,5 @@ interface TileProps {
 }
 
 export default function TileComponent({ tile }: TileProps) {
-    return <span className="tile">{ getTileDisplay(tile) }</span>
+    return <span className="tile">{getTileDisplay(tile)}</span>
 }

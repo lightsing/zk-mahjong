@@ -7,9 +7,9 @@ import './index.css'
 import { __tla } from 'zk-mahjong-wasm'
 
 __tla.then(() => {
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>,
-  )
+    ReactDOM.createRoot(document.getElementById('root')!).render(
+        <React.StrictMode>
+            <App />
+        </React.StrictMode>
+    )
 })

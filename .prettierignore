@@ -1,0 +1,25 @@
+# Prettier Ignores
+
+pnpm-lock.yaml
+node_modules
+
+# Rust
+core/
+wasm-sys/
+target/
+
+# Vite Build
+dist
+
+# Circuits
+## Hardhat files
+/circuits/cache
+/circuits/artifacts
+## TypeChain files
+/circuits/typechain
+/circuits/typechain-types
+## solidity-coverage files
+/circuits/coverage
+/circuits/coverage.json
+/circuits/contracts/*.sol
+/circuits/build

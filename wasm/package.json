@@ -1,24 +1,24 @@
 {
-  "name": "zk-mahjong-wasm",
-  "version": "1.0.0",
-  "description": "",
-  "type": "module",
-  "module": "dist/zk-mahjong-wasm.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc && vite build"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "zk-mahjong-wasm-sys": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.1",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "vite-plugin-top-level-await": "^1.4.1",
-    "vite-plugin-wasm": "^3.3.0"
-  }
+    "name": "zk-mahjong-wasm",
+    "version": "1.0.0",
+    "description": "",
+    "type": "module",
+    "module": "dist/zk-mahjong-wasm.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc && vite build"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "zk-mahjong-wasm-sys": "workspace:*"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.1",
+        "typescript": "^5.2.2",
+        "vite": "^5.0.8",
+        "vite-plugin-top-level-await": "^1.4.1",
+        "vite-plugin-wasm": "^3.3.0"
+    }
 }

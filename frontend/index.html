@@ -1,24 +1,30 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>zkMahjong</title>
-    <link rel="preload" as="font" href="/src/assets/GLMahjongTile-Regular.woff2" type="font/woff2" crossorigin="anonymous">
-    <style>
-      @font-face {
-        font-family: "GLMahjongTile";
-        src:
-          local("GLMahjongTile-Regular"),
-          /* url(/src/assets/GLMahjongTile-Regular.woff2) format("woff2"), */
-          url(/src/assets/GLMahjongTile-Regular.woff) format("woff");
-        unicode-range: U+1F000-1F02F;
-        font-display: swap;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>zkMahjong</title>
+        <link
+            rel="preload"
+            as="font"
+            href="/src/assets/GLMahjongTile-Regular.woff2"
+            type="font/woff2"
+            crossorigin="anonymous"
+        />
+        <style>
+            @font-face {
+                font-family: 'GLMahjongTile';
+                src: local('GLMahjongTile-Regular'),
+                    /* url(/src/assets/GLMahjongTile-Regular.woff2) format("woff2"), */
+                        url(/src/assets/GLMahjongTile-Regular.woff)
+                        format('woff');
+                unicode-range: U+1F000-1F02F;
+                font-display: swap;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+    </body>
 </html>

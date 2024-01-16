@@ -1,5 +1,5 @@
 packages:
-  - circuits
-  - wasm-sys/pkg
-  - wasm
-  - frontend
+    - circuits
+    - wasm-sys/pkg
+    - wasm
+    - frontend
