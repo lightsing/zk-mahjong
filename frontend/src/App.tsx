@@ -4,6 +4,7 @@ import {
     MahjongKey,
     AggregatedMahjongPubkey,
     genInitTileSet,
+    shuffleEncryptDeck,
 } from 'zk-mahjong-wasm'
 import TileComponent from './components/Tile'
 import { idToTile } from './utils/tile'
@@ -16,8 +17,9 @@ function App() {
 
     const aggregatePublicKey = new AggregatedMahjongPubkey(publicKeyList)
 
+    const initDeck = genInitTileSet()
     const { permutation, randomness, tiles } =
-        genInitTileSet(aggregatePublicKey)
+        shuffleEncryptDeck(aggregatePublicKey, initDeck)
 
     const decodedTiles = tiles
         .map((t) => secretKeyList[0].unmask(t))

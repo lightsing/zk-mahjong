@@ -1,5 +1,5 @@
 use rand::Rng;
-use serde::{Serialize};
+use serde::Serialize;
 use crate::{babyjubjub::{Point, PublicKey}, bn128::Fr, elgamal::MaskedMessage};
 use ff::Field;
 use self::map::{TILE_MAP, TILES};
@@ -63,12 +63,23 @@ pub fn gen_randomness(n: usize) -> Vec<Fr> {
     (0..n).map(|_| Fr::random(&mut rng)).collect()
 }
 
-pub fn get_richi_tile_set(agg_pk: &PublicKey) -> ShuffleEncryptResult {
+pub fn get_richi_tiles() -> Vec<MaskedMessage> {
+    TILES[0..136].iter().map(|t| MaskedMessage::new(t.point)).collect()
+}
+
+pub fn get_full_tiles() -> Vec<MaskedMessage> {
+    TILES.iter().map(|t| MaskedMessage::new(t.point)).collect()
+}
+
+pub fn shuffle_encrypt_deck(
+    agg_pk: &PublicKey,
+    tiles: &[MaskedMessage],
+) -> ShuffleEncryptResult {
     let randomness = gen_randomness(136);
-    let mut tiles: Vec<MaskedMessage> = TILES[0..136]
+    let mut tiles: Vec<MaskedMessage> = tiles
         .iter()
         .zip(randomness.iter())
-        .map(|(tile, randomness)| MaskedMessage::new(tile.point, agg_pk, randomness))
+        .map(|(tile, randomness)| tile.remask(agg_pk, randomness))
         .collect();
     let permutation = PermutationMatrix::new(136);
     permutation.apply(&mut tiles);

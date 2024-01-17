@@ -1,4 +1,4 @@
-import { genInitTileSet as genInitTileSetWasm } from 'zk-mahjong-wasm-sys'
+import { genInitTileSet as genInitTileSetWasm, shuffleEncryptDeck as shuffleEncryptDeckWasm } from 'zk-mahjong-wasm-sys'
 import {
     MaskedMessage,
     type AggregatedMahjongPubkey,
@@ -12,14 +12,17 @@ export interface ShuffleResult {
     tiles: MaskedMessage[]
 }
 
-export const genInitTileSet = (aggPk: AggregatedMahjongPubkey) => {
-    const { permutation, randomness, tiles } = genInitTileSetWasm(
-        aggPk.key
-    ) as ShuffleResult
+export const genInitTileSet = () => genInitTileSetWasm() as MaskedMessage[]
+
+export const shuffleEncryptDeck = (
+    agg_pk: AggregatedMahjongPubkey,
+    tiles: MaskedMessage[],
+) => {
+    const result = shuffleEncryptDeckWasm(agg_pk.key, tiles)
 
     return {
-        permutation,
-        randomness,
-        tiles: tiles.map((t) => new MaskedMessage(t)),
-    }
+        permutation: result.permutation,
+        randomness: result.randomness,
+        tiles: result.tiles.map((tile: { c0: Point; c1: Point }) => new MaskedMessage(tile)),
+    } as ShuffleResult
 }

@@ -10,17 +10,16 @@ pub struct MaskedMessage {
 }
 
 impl MaskedMessage {
-    pub fn new(m: Point, agg_pk: &PublicKey, randmomness: &Fr) -> MaskedMessage {
-        let c0 = BASE_POINT.mul_scalar(&randmomness);
-        let c1 = agg_pk.mul_scalar(&randmomness) + m;
+    pub fn new(m: Point) -> MaskedMessage {
         MaskedMessage {
-            c0, c1: c1.affine()
+            c0: Point::ZERO,
+            c1: m,
         }
     }
 
-    pub fn remask(&self, agg_pk: &PublicKey, randmomness: &Fr) -> MaskedMessage {
-        let c0 = BASE_POINT.mul_scalar(&randmomness) + self.c0;
-        let c1 = agg_pk.mul_scalar(&randmomness) + self.c1;
+    pub fn remask(&self, agg_pk: &PublicKey, randomness: &Fr) -> MaskedMessage {
+        let c0 = BASE_POINT.mul_scalar(&randomness) + self.c0;
+        let c1 = agg_pk.mul_scalar(&randomness) + self.c1;
         MaskedMessage{
             c0: c0.affine(), c1: c1.affine()
         }
@@ -42,7 +41,6 @@ mod tests {
     use super::*;
     use ff::Field;
 
-
     #[test]
     fn test() {
         let sks: [SecretKey; 4] = std::array::from_fn(|_| SecretKey::random());
@@ -50,12 +48,12 @@ mod tests {
         let agg_pk = PublicKey::aggregate(pks);
 
         for idx in 0..144 {
-            let m = TILES[idx].point;
+            let m = MaskedMessage::new(TILES[idx].point);
             let randomness = Fr::random(rand::thread_rng());
-            let masked = MaskedMessage::new(m, &agg_pk, &randomness);
+            let masked = m.remask(&agg_pk, &randomness);
 
             let unmasked = sks.iter().fold(masked, |acc, sk| acc.unmask(sk));
-            assert_eq!(unmasked.c1, m);
+            assert_eq!(unmasked.c1, m.c1);
             let tile = TILE_MAP.get(&unmasked.c1.x).unwrap();
             assert_eq!(tile, &TILES[idx]);
             let tile = lookup_tile(&unmasked.c1.x).unwrap();

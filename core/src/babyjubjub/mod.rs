@@ -75,6 +75,10 @@ impl Point {
 }
 
 impl Point {
+    pub const ZERO: Point = Point {
+        x: Fr::ZERO,
+        y: Fr::ONE,
+    };
     pub const BASE_POINT: Point = BASE_POINT;
 
     pub fn new(x: Fr, y: Fr) -> Point {
