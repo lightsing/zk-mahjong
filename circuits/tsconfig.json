@@ -1,11 +1,53 @@
 {
     "compilerOptions": {
-        "target": "es2020",
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
+        "verbatimModuleSyntax": true,
+        // Classification follows https://www.typescriptlang.org/tsconfig
+
+        // Type Checking
         "strict": true,
-        "skipLibCheck": true,
-        "resolveJsonModule": true
-    }
+        // exactOptionalPropertyTypes: false,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        // noPropertyAccessFromIndexSignature: false,
+        // noUncheckedIndexedAccess: false,
+        // noUnusedLocals: false,
+        // noUnusedParameters: false,
+        "useUnknownInCatchVariables": true,
+        "allowImportingTsExtensions": true,
+
+        // Modules
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+
+        // Emit
+        "declaration": true,
+        "emitDeclarationOnly": true,
+        "stripInternal": true, // skip type emit for @internal types
+        "outDir": "dist",
+        // "rootDir": "src",
+
+        // JavaScript Support
+        "allowJs": false,
+        "checkJs": false,
+
+        // Interop Constraints
+        "forceConsistentCasingInFileNames": true,
+
+        // Language and Environment
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "target": "ES2022",
+        "useDefineForClassFields": true,
+        "types": ["vite/client"],
+
+        // Projects
+        "composite": true,
+        "incremental": true,
+
+        // Completeness
+        "skipLibCheck": true // skip all type checks for .d.ts files
+    },
+    "include": ["src"]
 }

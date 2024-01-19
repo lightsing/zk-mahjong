@@ -63,9 +63,7 @@ impl Display for Fr {
 impl Serialize for Fr {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let big = self.to_bigint();
-        let mut s = big.to_str_radix(10);
-        s.push('n');
-        serializer.serialize_str(&s)
+        serializer.serialize_str(&big.to_str_radix(10))
     }
 }
 
@@ -74,7 +72,7 @@ impl<'de> Deserialize<'de> for Fr {
     where
         D: serde::Deserializer<'de> {
         let s = String::deserialize(deserializer)?;
-        Fr::from_str_vartime(s[..s.len()-1].as_ref())
+        Fr::from_str_vartime(&s)
             .ok_or_else(|| serde::de::Error::custom("invalid field element"))
     }
 }

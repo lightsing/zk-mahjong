@@ -6,7 +6,7 @@ import {
     lookupTile,
 } from 'zk-mahjong-wasm-sys'
 
-export type FrString = `${string}n`
+export type FrString = string
 
 export interface Point {
     x: FrString
@@ -56,6 +56,10 @@ export class MahjongKey {
     constructor() {
         this.key = zkMahjongKeyGen()
         this.publicKey = MahjongPubkey.fromPrivateKey(this.key)
+    }
+
+    toBigInt(): bigint {
+        return BigInt(this.key)
     }
 
     unmask(maskedMessage: MaskedMessage): MaskedMessage {

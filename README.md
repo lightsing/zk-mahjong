@@ -9,6 +9,11 @@
     -   Windows:
         -   Install [Chocolatey](https://chocolatey.org/install)
         -   Run `choco install make` in an elevated command prompt
+-   [curl](https://curl.se/download.html)
+    -   Windows:
+        -   Download from [here](https://curl.se/dlwiz/?type=bin) and add to PATH, or...
+        -   Install [Chocolatey](https://chocolatey.org/install)
+        -   Run `choco install curl` in an elevated command prompt
 -   [wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
 -   [pnpm](https://pnpm.js.org/en/installation)
 -   [circom2](https://docs.circom.io/getting-started/installation/)

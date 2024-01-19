@@ -87,7 +87,6 @@ pub fn shuffle_encrypt_deck(
 }
 
 pub fn lookup_tile(x: &Fr) -> Option<BaseTile> {
-    info!("lookup tile: {}", x);
     TILE_MAP.get(x).copied()
 }
 

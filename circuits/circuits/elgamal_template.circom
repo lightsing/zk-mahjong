@@ -5,75 +5,52 @@ include "../node_modules/circomlib/circuits/bitify.circom";
 include "../node_modules/circomlib/circuits/escalarmulany.circom";
 include "../node_modules/circomlib/circuits/escalarmulfix.circom";
 
-// out = r * G + in
-template BabyMulAddFix(NUM_BITS, BASE8) {
-    signal input in[2];
-    signal input r_bits[254];
-    signal output out[2];
-
-    component mul = EscalarMulFix(NUM_BITS, BASE8);
-    component add = BabyAdd();
-    mul.e <== r_bits;
-    add.x1 <== mul.out[0];
-    add.y1 <== mul.out[1];
-    add.x2 <== in[0];
-    add.y2 <== in[1];
-    out[0] <== add.xout;
-    out[1] <== add.yout;
-}
-
-// out = r * P + in
-template BabyMulAddAny(NUM_BITS) {
-    signal input in[2];
-    signal input r_bits[254];
-    signal input p[2];
-    signal output out[2];
-
-    component mul = EscalarMulAny(NUM_BITS);
-    component add = BabyAdd();
-    mul.e <== r_bits;
-    mul.p <== p;
-    add.x1 <== mul.out[0];
-    add.y1 <== mul.out[1];
-    add.x2 <== in[0];
-    add.y2 <== in[1];
-    out[0] <== add.xout;
-    out[1] <== add.yout;
-}
+include "./babyjubjub.circom";
 
 // c0 = r * G + ic0
 // c1 = r * pk + ic1
-template ElGamalMask(NUM_BITS, BASE8) {
+template ElGamalMask(NUM_BITS, BASE8, N) {
     signal input in_pk[2];
-    signal input in_r;
-    signal input in_c0[2];
-    signal input in_c1[2];
+    signal input in_r[N];
+    signal input in_c0[N][2];
+    signal input in_c1[N][2];
 
-    signal output out_c0[2];
-    signal output out_c1[2];
+    signal output out_c0[N][2];
+    signal output out_c1[N][2];
 
-    component bitify = Num2Bits(NUM_BITS);
-    bitify.in <== in_r;
-    
-    component mul_add_c0 = BabyMulAddFix(NUM_BITS, BASE8);
-    mul_add_c0.in <== in_c0;
-    mul_add_c0.r_bits <== bitify.out;
-    out_c0 <== mul_add_c0.out;
+    // check inputs are on the curve
+    component point[2 * N];
+    for (var i = 0; i < N; i++) {
+        point[i] = BabyCheck();
+        point[i].x <== in_c0[i][0];
+        point[i].y <== in_c0[i][1];
+        point[i + N] = BabyCheck();
+        point[i + N].x <== in_c1[i][0];
+        point[i + N].y <== in_c1[i][1];
+    }
 
-    component mul_add_c1 = BabyMulAddAny(NUM_BITS);
-    mul_add_c1.in <== in_c1;
-    mul_add_c1.r_bits <== bitify.out;
-    mul_add_c1.p <== in_pk;
-    out_c1 <== mul_add_c1.out;
-}
+    component bitify[N];
+    for (var i = 0; i < N; i++) {
+        bitify[i] = Num2Bits(NUM_BITS);
+        bitify[i].in <== in_r[i];
+    }
 
-template BabyPkCheck(NUM_BITS, BASE8) {
-    signal input sk_bits[NUM_BITS];
-    signal output pk[2];
+    component mul_add_fix[N];
+    component mul_add_any[N];
+    for (var i = 0; i < N; i++) {
+        // c0 = r * G + ic0
+        mul_add_fix[i] = BabyMulAddFix(NUM_BITS, BASE8);
+        mul_add_fix[i].in <== in_c0[i];
+        mul_add_fix[i].r_bits <== bitify[i].out;
+        out_c0[i] <== mul_add_fix[i].out;
 
-    component mul = EscalarMulFix(NUM_BITS, BASE8);
-    mul.e <== sk_bits;
-    pk <== mul.out;
+        // c1 = r * pk + ic1
+        mul_add_any[i] = BabyMulAddAny(NUM_BITS);
+        mul_add_any[i].in <== in_c1[i];
+        mul_add_any[i].r_bits <== bitify[i].out;
+        mul_add_any[i].p <== in_pk;
+        out_c1[i] <== mul_add_any[i].out;
+    }
 }
 
 // out = c1 - sk * c0
@@ -93,9 +70,18 @@ template ElGamalUnmask(NUM_BITS, BASE8, N) {
     pk_check.sk_bits <== bitify.out;
     pk <== pk_check.pk;
 
+    component point[N][2];
     component mul[N];
     component add[N];
     for (var i = 0; i < N; i++) {
+        // check inputs are on the curve
+        point[i][0] = BabyCheck();
+        point[i][0].x <== in_c0[i][0];
+        point[i][0].y <== in_c0[i][1];
+        point[i][1] = BabyCheck();
+        point[i][1].x <== in_c1[i][0];
+        point[i][1].y <== in_c1[i][1];
+
         // mul.out = sk * c0
         mul[i] = EscalarMulAny(NUM_BITS);
         mul[i].e <== bitify.out;
@@ -112,8 +98,3 @@ template ElGamalUnmask(NUM_BITS, BASE8, N) {
         out[i][1] <== add[i].yout;
     }
 }
-
-component main = ElGamalUnmask(254, [
-    5299619240641551281634865583518297030282874472190772894086521144482721001553,
-    16950150798460657717958625567821834550301663161624707787222815936182638968203
-], 1);
