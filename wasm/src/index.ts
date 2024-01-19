@@ -1,6 +1,3 @@
-import { zkMahjongInit } from 'zk-mahjong-wasm-sys'
-
-zkMahjongInit()
-
-export * from './key.ts'
-export * from './tile.ts'
+export { zkMahjongInit } from 'zk-mahjong-wasm-sys'
+export * from './key.js'
+export * from './tile.js'

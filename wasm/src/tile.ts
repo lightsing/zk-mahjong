@@ -4,7 +4,7 @@ import {
     type AggregatedMahjongPubkey,
     type FrString,
     type Point,
-} from './key.ts'
+} from './key.js'
 
 export interface ShuffleResult {
     permutation: number[][]

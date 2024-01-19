@@ -16,7 +16,6 @@
         // noUnusedLocals: false,
         // noUnusedParameters: false,
         "useUnknownInCatchVariables": true,
-        "allowImportingTsExtensions": true,
 
         // Modules
         "module": "NodeNext",
@@ -25,9 +24,10 @@
         // Emit
         "declaration": true,
         "emitDeclarationOnly": true,
+        "declarationMap": true,
         "stripInternal": true, // skip type emit for @internal types
-        "outDir": "dist",
-        // "rootDir": "src",
+        "outDir": "types",
+        "rootDir": "src",
 
         // JavaScript Support
         "allowJs": false,
@@ -40,7 +40,6 @@
         "lib": ["ES2022", "DOM", "DOM.Iterable"],
         "target": "ES2022",
         "useDefineForClassFields": true,
-        "types": ["vite/client"],
 
         // Projects
         "composite": true,

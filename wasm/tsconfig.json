@@ -16,7 +16,6 @@
         // noUnusedLocals: false,
         // noUnusedParameters: false,
         "useUnknownInCatchVariables": true,
-        "allowImportingTsExtensions": true,
 
         // Modules
         "module": "NodeNext",
@@ -24,7 +23,8 @@
 
         // Emit
         "declaration": true,
-        "emitDeclarationOnly": true,
+        "sourceMap": true,
+        "declarationMap": true,
         "stripInternal": true, // skip type emit for @internal types
         "outDir": "dist",
         "rootDir": "src",

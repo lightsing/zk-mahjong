@@ -1,6 +1,5 @@
 import { type PlonkProof, type PublicSignals } from 'snarkjs'
-import ElGamalPubkeyProveWorker from './workers/elgamal_pubkey.ts?worker&inline'
-import { WorkerDispatcher } from './workers/index.ts'
+import { WorkerDispatcher } from './workers/index.js'
 
 export interface FullProof {
     proof: PlonkProof
@@ -12,7 +11,19 @@ export interface ElgamalInitArgs {
     zkeyPath: string
 }
 
-const elGamalPubkeyProveWorker = new WorkerDispatcher<ElgamalInitArgs, bigint, FullProof>(new ElGamalPubkeyProveWorker())
+let elGamalPubkeyProveWorker: WorkerDispatcher<ElgamalInitArgs, string, FullProof> | null = null
 
-export const proveSecretKey = (sk: bigint) => elGamalPubkeyProveWorker.postMessage(sk)
-export const initElgamalPubkeyProveWorker = (args: ElgamalInitArgs) => elGamalPubkeyProveWorker.init(args)
+export const initElGamalPubkeyProveWorker = async (worker: Worker, args: ElgamalInitArgs) => {
+    if (elGamalPubkeyProveWorker !== null) {
+        throw new Error('ElGamal Pubkey Prove Worker already set')
+    }
+    elGamalPubkeyProveWorker = new WorkerDispatcher(worker)
+    await elGamalPubkeyProveWorker.init(args)
+}
+
+export const proveSecretKey = (sk: bigint) => {
+    if (elGamalPubkeyProveWorker === null) {
+        throw new Error('ElGamal Pubkey Prove Worker not set')
+    }
+    return elGamalPubkeyProveWorker.postMessage(sk.toString())
+}
