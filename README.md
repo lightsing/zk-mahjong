@@ -39,6 +39,12 @@ pnpm install
 # build zk-mahjong-wasm package
 cd wasm
 pnpm run build
+
+# build circutis
+cd ../circuits
+npx hardhat compile-circuit --degree 08 elgamal_pubkey
+npx hardhat compile-circuit --degree 21 shuffle_encrypt
+pnpm run build
 ```
 
 ### Run dev server

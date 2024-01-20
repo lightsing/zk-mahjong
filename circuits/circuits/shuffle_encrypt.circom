@@ -14,8 +14,13 @@ template ShuffleEncrypt(NUM_PLAYERS, NUM_CARDS) {
     signal input permutation[NUM_CARDS][NUM_CARDS]; // Permutation of the cards
 
     // use as intermediate, avoid large public inputs
+    // out_c0 = r * G + in_c0
+    // out_c1 = r * pk + in_c1
     signal out_c0[NUM_CARDS][2]; // Points of the cards
     signal out_c1[NUM_CARDS][2]; // Points of the cards
+
+    signal output in_sum[2];
+    signal output out_sum[2];
 
     // check that the agg_pk is valid point
     component baby_check = BabyCheck();
@@ -33,6 +38,9 @@ template ShuffleEncrypt(NUM_PLAYERS, NUM_CARDS) {
     mask.in_c0 <== in_c0;
     mask.in_c1 <== in_c1;
 
+    component matrix_is_permutation = ConstrainPermutationMatrix(NUM_CARDS);
+    matrix_is_permutation.in <== permutation;
+
     component matrix_mul_c0 = MatrixMultiplier(NUM_CARDS, NUM_CARDS, 2);
     matrix_mul_c0.A <== permutation;
     matrix_mul_c0.B <== mask.out_c0;
@@ -42,6 +50,24 @@ template ShuffleEncrypt(NUM_PLAYERS, NUM_CARDS) {
     matrix_mul_c1.A <== permutation;
     matrix_mul_c1.B <== mask.out_c1;
     out_c1 <== matrix_mul_c1.out;
+
+    component in_baby_sum = BabySum(NUM_CARDS * 2);
+    for (var i = 0; i < NUM_CARDS; i++) {
+        in_baby_sum.in[i * 2][0] <== out_c0[i][0];
+        in_baby_sum.in[i * 2][1] <== out_c0[i][1];
+        in_baby_sum.in[i * 2 + 1][0] <== out_c1[i][0];
+        in_baby_sum.in[i * 2 + 1][1] <== out_c1[i][1];
+    }
+    in_sum <== in_baby_sum.out;
+
+    component out_baby_sum = BabySum(NUM_CARDS * 2);
+    for (var i = 0; i < NUM_CARDS; i++) {
+        out_baby_sum.in[i * 2][0] <== out_c1[i][0];
+        out_baby_sum.in[i * 2][1] <== out_c1[i][1];
+        out_baby_sum.in[i * 2 + 1][0] <== out_c0[i][0];
+        out_baby_sum.in[i * 2 + 1][1] <== out_c0[i][1];
+    }
+    out_sum <== out_baby_sum.out;
 }
 
 component main {public [agg_pk]} = ShuffleEncrypt(4, 136);

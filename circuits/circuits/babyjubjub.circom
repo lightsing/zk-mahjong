@@ -49,16 +49,9 @@ template BabyPkCheck(NUM_BITS, BASE8) {
     pk <== mul.out;
 }
 
-template BabyAggPk(N) {
+template BabySum(N) {
     signal input in[N][2];
     signal output out[2];
-
-    component check[N];
-    for (var i = 0; i < N; i++) {
-        check[i] = BabyCheck();
-        check[i].x <== in[i][0];
-        check[i].y <== in[i][1];
-    }
 
     component add[N];
 

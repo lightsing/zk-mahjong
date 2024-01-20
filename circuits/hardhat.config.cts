@@ -39,6 +39,16 @@ task('compile-circuit', 'Compile the circuit')
         mkdirSync('cache', { recursive: true })
         mkdirSync(`build/${name}`, { recursive: true })
         if (!existsSync(`cache/${degree}.ptau`)) {
+            console.log(`First time setup for ${degree}.ptau, could take a while`)
+            // size in bytes = 2^(degree-8)*294912+83096
+            let estimatedSize = (2 ** (degree - 8) * 294912 + 83096) / 1024 / 1024
+            if (estimatedSize > 1024) {
+                estimatedSize = Math.round(estimatedSize / 1024)
+                console.log(`Estimated size: ${estimatedSize} GB`)
+            } else {
+                estimatedSize = Math.round(estimatedSize)
+                console.log(`Estimated size: ${estimatedSize} MB`)
+            }
             execSync(
                 `curl -L https://storage.googleapis.com/zkevm/ptau/powersOfTau28_hez_final_${degree}.ptau -o cache/${degree}.ptau`
             )
