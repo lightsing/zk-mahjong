@@ -8,7 +8,10 @@ core/
 wasm-sys/
 target/
 
-# Vite Build
+# Rollup
+.rollup.cache/
+
+# Distribution
 dist
 
 # Circuits

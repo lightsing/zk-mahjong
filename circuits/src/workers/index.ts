@@ -11,7 +11,9 @@ export interface WorkerJobMessage<T> {
     input: T
 }
 
-export type WorkerMessage<InitArgs, JobData> = WorkerInitMessage<InitArgs> | WorkerJobMessage<JobData>
+export type WorkerMessage<InitArgs, JobData> =
+    | WorkerInitMessage<InitArgs>
+    | WorkerJobMessage<JobData>
 
 export interface WorkerInitResponse {
     kind: 'init'
@@ -25,11 +27,12 @@ export interface WorkerJobResponse<Result> {
     error?: Error
 }
 
-
-export type WorkerResponse<Result> = WorkerInitResponse | WorkerJobResponse<Result>
+export type WorkerResponse<Result> =
+    | WorkerInitResponse
+    | WorkerJobResponse<Result>
 
 interface Callback<T> {
-    resolve: (result: T) => void,
+    resolve: (result: T) => void
     reject: (error: Error) => void
 }
 
@@ -51,10 +54,15 @@ export class WorkerDispatcher<InitArgs, JobData, Result> {
             }
             this.onerror()
         }
-        this.worker.onmessage = ({ data }: MessageEvent<WorkerResponse<Result>>) => {
+        this.worker.onmessage = ({
+            data,
+        }: MessageEvent<WorkerResponse<Result>>) => {
             if (data.kind === 'init') {
                 console.assert(!this.initialized, 'Should not call init twice')
-                console.assert(this.initializeCallback !== undefined, 'Should have initializeCallback')
+                console.assert(
+                    this.initializeCallback !== undefined,
+                    'Should have initializeCallback'
+                )
                 if (data.error) {
                     this.onerror()
                     this.initializeCallback!.reject(data.error)
@@ -83,7 +91,9 @@ export class WorkerDispatcher<InitArgs, JobData, Result> {
         this.worker.onerror = null
         this.worker.onmessage = null
         this.worker.terminate()
-        this.callbacks.forEach(({ reject }) => reject(new Error('Worker is poisoned')))
+        this.callbacks.forEach(({ reject }) =>
+            reject(new Error('Worker is poisoned'))
+        )
         this.callbacks.clear()
     }
 
@@ -97,7 +107,10 @@ export class WorkerDispatcher<InitArgs, JobData, Result> {
         const promise = new Promise<void>((resolve, reject) => {
             this.initializeCallback = { resolve, reject }
         })
-        this.worker.postMessage({ kind: 'init', args } as WorkerInitMessage<InitArgs>)
+        this.worker.postMessage({
+            kind: 'init',
+            args,
+        } as WorkerInitMessage<InitArgs>)
         return promise
     }
 
@@ -107,9 +120,13 @@ export class WorkerDispatcher<InitArgs, JobData, Result> {
         }
         const id = this.jobCounter++
         const promise = new Promise<Result>((resolve, reject) => {
-            this.callbacks.set(id, {resolve, reject})
+            this.callbacks.set(id, { resolve, reject })
         })
-        this.worker.postMessage({ kind: 'job', id, input } as WorkerJobMessage<JobData>)
+        this.worker.postMessage({
+            kind: 'job',
+            id,
+            input,
+        } as WorkerJobMessage<JobData>)
         return promise
     }
 }

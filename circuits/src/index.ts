@@ -1,4 +1,8 @@
-import { type CircuitSignals, type PlonkProof, type PublicSignals } from 'snarkjs'
+import {
+    type CircuitSignals,
+    type PlonkProof,
+    type PublicSignals,
+} from 'snarkjs'
 import { WorkerDispatcher } from './workers/index.js'
 
 export type CircuitKind = 'elGamalSecretKey'
@@ -22,7 +26,11 @@ export interface JobMessage {
     input: CircuitSignals
 }
 
-let proverWorker: WorkerDispatcher<WorkerInitArgs, JobMessage, FullProof> | null = null
+let proverWorker: WorkerDispatcher<
+    WorkerInitArgs,
+    JobMessage,
+    FullProof
+> | null = null
 
 export const initProveWorker = async (worker: Worker, args: WorkerInitArgs) => {
     if (proverWorker !== null) {
@@ -36,8 +44,8 @@ export const proveSecretKey = (sk: bigint) => {
     if (proverWorker === null) {
         throw new Error('ElGamal Pubkey Prove Worker not set')
     }
-    return proverWorker.postMessage({ 
+    return proverWorker.postMessage({
         circuit: 'elGamalSecretKey',
-        input: { sk: sk.toString()}
+        input: { sk: sk.toString() },
     })
 }

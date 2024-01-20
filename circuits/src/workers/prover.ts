@@ -4,7 +4,9 @@ import { plonk, type CircuitSignals } from 'snarkjs'
 
 let params: WorkerInitArgs | null = null
 
-onmessage = ({ data }: MessageEvent<WorkerMessage<WorkerInitArgs, JobMessage>>) => {
+onmessage = ({
+    data,
+}: MessageEvent<WorkerMessage<WorkerInitArgs, JobMessage>>) => {
     if (data.kind === 'init') {
         params = data.args
         postMessage({ kind: 'init' })
@@ -16,7 +18,11 @@ onmessage = ({ data }: MessageEvent<WorkerMessage<WorkerInitArgs, JobMessage>>) 
     }
 }
 
-const handleJob = async (id: number, circuit: CircuitKind, input: CircuitSignals) => {
+const handleJob = async (
+    id: number,
+    circuit: CircuitKind,
+    input: CircuitSignals
+) => {
     try {
         const wasm = params![circuit].wasmPath
         const zk = params![circuit].zkeyPath

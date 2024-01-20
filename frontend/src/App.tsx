@@ -19,10 +19,16 @@ function App() {
     useEffect(() => {
         console.log(secretKeyList)
         const prove = async () => {
-            const {proof, publicSignals} = await proveSecretKey(secretKeyList[0].toBigInt())
+            const { proof, publicSignals } = await proveSecretKey(
+                secretKeyList[0].toBigInt()
+            )
             console.log(proof, publicSignals)
-            console.assert(secretKeyList[0].publicKey.key.x === publicSignals[0])
-            console.assert(secretKeyList[0].publicKey.key.y === publicSignals[1])
+            console.assert(
+                secretKeyList[0].publicKey.key.x === publicSignals[0]
+            )
+            console.assert(
+                secretKeyList[0].publicKey.key.y === publicSignals[1]
+            )
         }
         prove()
     }, [])
@@ -30,8 +36,7 @@ function App() {
     const aggregatePublicKey = new AggregatedMahjongPubkey(publicKeyList)
 
     const initDeck = genInitTileSet()
-    const { tiles } =
-        shuffleEncryptDeck(aggregatePublicKey, initDeck)
+    const { tiles } = shuffleEncryptDeck(aggregatePublicKey, initDeck)
 
     const decodedTiles = tiles
         .map((t) => secretKeyList[0].unmask(t))
