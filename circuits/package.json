@@ -7,7 +7,7 @@
     "exports": {
         "./package.json": "./package.json",
         "./types/*": "./dist/types/*",
-        "./worker": "./dist/elgamal_pubkey.worker.js",
+        "./worker": "./dist/prover.worker.js",
         ".": {
             "types": "./dist/types/index.d.ts",
             "default": "./dist/main.js"

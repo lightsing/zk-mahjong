@@ -8,7 +8,7 @@ export interface WorkerInitMessage<T> {
 export interface WorkerJobMessage<T> {
     kind: 'job'
     id: number
-    data: T
+    input: T
 }
 
 export type WorkerMessage<InitArgs, JobData> = WorkerInitMessage<InitArgs> | WorkerJobMessage<JobData>
@@ -101,7 +101,7 @@ export class WorkerDispatcher<InitArgs, JobData, Result> {
         return promise
     }
 
-    public async postMessage(data: JobData): Promise<Result> {
+    public async postMessage(input: JobData): Promise<Result> {
         if (this.poisoned) {
             throw new Error('Worker is poisoned')
         }
@@ -109,7 +109,7 @@ export class WorkerDispatcher<InitArgs, JobData, Result> {
         const promise = new Promise<Result>((resolve, reject) => {
             this.callbacks.set(id, {resolve, reject})
         })
-        this.worker.postMessage({ kind: 'job', id, data } as WorkerJobMessage<JobData>)
+        this.worker.postMessage({ kind: 'job', id, input } as WorkerJobMessage<JobData>)
         return promise
     }
 }

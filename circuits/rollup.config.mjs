@@ -11,9 +11,9 @@ export default [
         plugins: [typescript(), nodeResolve({browser: true})],
     },
     {
-        input: './src/workers/elgamal_pubkey.ts',
+        input: './src/workers/prover.ts',
         output: {
-            file: './dist/elgamal_pubkey.worker.js',
+            file: './dist/prover.worker.js',
             format: 'esm',
         },
         plugins: [typescript(), nodeResolve({browser: true})],

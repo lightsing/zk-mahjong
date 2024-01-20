@@ -1,29 +1,43 @@
-import { type PlonkProof, type PublicSignals } from 'snarkjs'
+import { type CircuitSignals, type PlonkProof, type PublicSignals } from 'snarkjs'
 import { WorkerDispatcher } from './workers/index.js'
+
+export type CircuitKind = 'elGamalSecretKey'
 
 export interface FullProof {
     proof: PlonkProof
     publicSignals: PublicSignals
 }
 
-export interface ElgamalInitArgs {
+export interface InitArgs {
     wasmPath: string
     zkeyPath: string
 }
 
-let elGamalPubkeyProveWorker: WorkerDispatcher<ElgamalInitArgs, string, FullProof> | null = null
+export type WorkerInitArgs = {
+    [circuit in CircuitKind]: InitArgs
+}
 
-export const initElGamalPubkeyProveWorker = async (worker: Worker, args: ElgamalInitArgs) => {
-    if (elGamalPubkeyProveWorker !== null) {
+export interface JobMessage {
+    circuit: CircuitKind
+    input: CircuitSignals
+}
+
+let proverWorker: WorkerDispatcher<WorkerInitArgs, JobMessage, FullProof> | null = null
+
+export const initProveWorker = async (worker: Worker, args: WorkerInitArgs) => {
+    if (proverWorker !== null) {
         throw new Error('ElGamal Pubkey Prove Worker already set')
     }
-    elGamalPubkeyProveWorker = new WorkerDispatcher(worker)
-    await elGamalPubkeyProveWorker.init(args)
+    proverWorker = new WorkerDispatcher(worker)
+    await proverWorker.init(args)
 }
 
 export const proveSecretKey = (sk: bigint) => {
-    if (elGamalPubkeyProveWorker === null) {
+    if (proverWorker === null) {
         throw new Error('ElGamal Pubkey Prove Worker not set')
     }
-    return elGamalPubkeyProveWorker.postMessage(sk.toString())
+    return proverWorker.postMessage({ 
+        circuit: 'elGamalSecretKey',
+        input: { sk: sk.toString()}
+    })
 }
