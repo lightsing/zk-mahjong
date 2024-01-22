@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 zk-mahjong-core = { path = "../core" }
+halo2curves.workspace = true
 halo2_proofs.workspace = true
 ff.workspace = true
 smallvec.workspace = true

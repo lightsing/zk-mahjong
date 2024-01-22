@@ -1,5 +1,8 @@
-use ff::PrimeField;
-use halo2_proofs::{circuit::Layouter, plonk::{ConstraintSystem, Error, Circuit, Expression}};
+use halo2_proofs::{
+    circuit::Layouter,
+    plonk::{Circuit, ConstraintSystem, Error},
+};
+use halo2curves::bn256::Fr;
 
 pub mod constraint_builder;
 
@@ -8,9 +11,9 @@ pub mod constraint_builder;
 /// other via lookup tables and/or shared public inputs.  This type must contain
 /// all the inputs required to synthesize this circuit (and the contained
 /// table(s) if any).
-pub trait SubCircuit<F: PrimeField> {
+pub trait SubCircuit {
     /// Configuration of the SubCircuit.
-    type Config: SubCircuitConfig<F>;
+    type Config: SubCircuitConfig;
 
     /// Returns number of unusable rows of the SubCircuit, which should be
     /// `meta.blinding_factors() + 1`.
@@ -19,7 +22,7 @@ pub trait SubCircuit<F: PrimeField> {
     }
 
     /// Returns the instance columns required for this circuit.
-    fn instance(&self) -> Vec<Vec<F>> {
+    fn instance(&self) -> Vec<Vec<Fr>> {
         vec![]
     }
 
@@ -30,17 +33,17 @@ pub trait SubCircuit<F: PrimeField> {
     fn synthesize_sub(
         &self,
         config: &Self::Config,
-        layouter: &mut impl Layouter<F>,
+        layouter: &mut impl Layouter<Fr>,
     ) -> Result<(), Error>;
 }
 
 /// SubCircuit configuration
-pub trait SubCircuitConfig<F: PrimeField> {
+pub trait SubCircuitConfig {
     /// Config constructor arguments
     type ConfigArgs;
 
     /// Type constructor
-    fn new(meta: &mut ConstraintSystem<F>, args: Self::ConfigArgs) -> Self;
+    fn new(meta: &mut ConstraintSystem<Fr>, args: Self::ConfigArgs) -> Self;
 }
 
 /// Returns number of unusable rows of the Circuit.
@@ -55,7 +58,7 @@ pub trait SubCircuitConfig<F: PrimeField> {
 /// For circuit with column queried at more than 3 distinct rotation, we can
 /// calculate the unusable rows as (x - 3) + 6 where x is the number of distinct
 /// rotation.
-pub(crate) fn unusable_rows<F: PrimeField, C: Circuit<F>>() -> usize {
+pub(crate) fn unusable_rows<C: Circuit<Fr>>() -> usize {
     let mut cs = ConstraintSystem::default();
     C::configure(&mut cs);
 
