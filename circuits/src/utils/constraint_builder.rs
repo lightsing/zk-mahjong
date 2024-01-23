@@ -1,7 +1,6 @@
+use crate::gadgets::utils::Expr;
 use ff::PrimeField;
 use halo2_proofs::plonk::Expression;
-use crate::gadgets::utils::Expr;
-
 
 #[derive(Default)]
 pub struct BaseConstraintBuilder<F> {
@@ -40,8 +39,9 @@ impl<F: PrimeField> BaseConstraintBuilder<F> {
     ) {
         self.add_constraint(
             name,
-            set.iter()
-                .fold(1u64.expr(), |acc, item| acc * (value.clone() - item.clone())),
+            set.iter().fold(1u64.expr(), |acc, item| {
+                acc * (value.clone() - item.clone())
+            }),
         );
     }
 

@@ -35,7 +35,6 @@ impl_expr!(u8);
 impl_expr!(u64);
 impl_expr!(usize);
 
-
 impl<F: PrimeField> Expr<F> for Expression<F> {
     #[inline]
     fn expr(&self) -> Expression<F> {
@@ -104,8 +103,8 @@ pub mod and {
 /// Returns `1` when `expr[0] || expr[1] || ... == 1`, and returns `0`
 /// otherwise. Inputs need to be boolean
 pub mod or {
-    use super::{and, not};
     use super::Expr;
+    use super::{and, not};
     use ff::PrimeField;
     use halo2_proofs::plonk::Expression;
 

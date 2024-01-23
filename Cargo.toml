@@ -1,15 +1,16 @@
 [workspace]
-members = [ 
-    "core",
-    "circuits",
-]
+members = ["core", "circuits"]
 resolver = "2"
 
 [workspace.dependencies]
 ff = { version = "0.13" }
 halo2curves = { version = "0.6.0", features = ["derive_serde"] }
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2", rev = "73408a140737d8336490452193b21f5a7a94e7de" }
-smallvec = { version = "2.0.0-alpha.3", features = ["specialization", "may_dangle"] }
+smallvec = { version = "2.0.0-alpha.3", features = [
+    "specialization",
+    "may_dangle",
+] }
+compact_str = "0.7"
 
 [profile.release]
 lto = true

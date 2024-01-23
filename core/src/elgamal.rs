@@ -51,8 +51,8 @@ impl MaskedMessage {
 mod tests {
     use super::*;
     use crate::tile::{
-        lookup_tile,
         map::{TILES, TILE_MAP},
+        BaseTile,
     };
     use ff::Field;
     use halo2curves::group::cofactor::CofactorCurveAffine;
@@ -78,7 +78,7 @@ mod tests {
             assert_eq!(unmasked_g1_affine, TILES[idx].point, "{}", idx);
             let tile = TILE_MAP.get(&unmasked_g1_affine.x.to_bytes()).unwrap();
             assert_eq!(tile, &TILES[idx]);
-            let tile = lookup_tile(&unmasked_g1_affine.x).unwrap();
+            let tile = BaseTile::lookup(&unmasked_g1_affine.x).unwrap();
             assert_eq!(tile, TILES[idx]);
         }
     }

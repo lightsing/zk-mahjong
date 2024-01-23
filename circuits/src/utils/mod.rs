@@ -1,10 +1,11 @@
 use halo2_proofs::{
     circuit::Layouter,
-    plonk::{Circuit, ConstraintSystem, Error},
+    plonk::{ConstraintSystem, Error},
 };
 use halo2curves::bn256::Fr;
 
 pub mod constraint_builder;
+pub mod ec;
 
 /// SubCircuit is a circuit that performs the verification of a specific part of
 /// the full Ethereum block verification.  The SubCircuit's interact with each
@@ -58,7 +59,8 @@ pub trait SubCircuitConfig {
 /// For circuit with column queried at more than 3 distinct rotation, we can
 /// calculate the unusable rows as (x - 3) + 6 where x is the number of distinct
 /// rotation.
-pub(crate) fn unusable_rows<C: Circuit<Fr>>() -> usize {
+#[cfg(test)]
+pub(crate) fn unusable_rows<C: halo2_proofs::plonk::Circuit<Fr>>() -> usize {
     let mut cs = ConstraintSystem::default();
     C::configure(&mut cs);
 

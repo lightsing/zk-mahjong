@@ -1,11 +1,14 @@
-use crate::escalarmul_circuit::PointColumns;
+use super::LookupTable;
+use crate::utils::ec::PointColumns;
+use compact_str::CompactString;
 use ff::{Field, PrimeField};
-use halo2_proofs::plonk::{Advice, Column, ConstraintSystem, Fixed};
+use halo2_proofs::plonk::{Advice, Any, Column, ConstraintSystem, Fixed};
 use halo2curves::{
     bn256::{Fq, Fr},
     group::{Curve, Group},
     grumpkin::{G1Affine, G1},
 };
+use smallvec::smallvec;
 
 /// Lookup table within the EC Scalar Mul circuit.
 #[derive(Clone, Copy, Debug)]
@@ -17,9 +20,9 @@ pub struct EscalarMulTable {
     /// accumulator of the scalar
     pub scalar_acc: Column<Advice>,
     /// base in twisted Edwards point form
-    pub base: PointColumns,
+    pub base: PointColumns<Advice>,
     /// result of the scalar multiplication in twisted Edwards point form
-    pub result: PointColumns,
+    pub result: PointColumns<Advice>,
 }
 
 #[derive(Debug)]
@@ -36,8 +39,8 @@ impl EscalarMulTable {
         let q_enable = meta.fixed_column();
         let is_last = meta.advice_column();
         let scalar_acc = meta.advice_column();
-        let base = PointColumns::construct(meta);
-        let result = PointColumns::construct(meta);
+        let base = PointColumns::<Advice>::construct(meta);
+        let result = PointColumns::<Advice>::construct(meta);
         EscalarMulTable {
             q_enable,
             is_last,
@@ -87,5 +90,31 @@ impl EscalarMulTable {
         assert_eq!(expected.to_affine(), result.to_affine(), "{assignment:#?}");
 
         assignment
+    }
+}
+
+impl LookupTable for EscalarMulTable {
+    fn columns(&self) -> super::Columns<Any> {
+        smallvec![
+            self.q_enable.into(),
+            self.is_last.into(),
+            self.scalar_acc.into(),
+            self.base.x.into(),
+            self.base.y.into(),
+            self.result.x.into(),
+            self.result.y.into(),
+        ]
+    }
+
+    fn annotations(&self) -> super::Annotations {
+        smallvec![
+            CompactString::new("q_enable"),
+            CompactString::new("is_last"),
+            CompactString::new("scalar_acc"),
+            CompactString::new("base.x"),
+            CompactString::new("base.y"),
+            CompactString::new("result.x"),
+            CompactString::new("result.y"),
+        ]
     }
 }

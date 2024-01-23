@@ -8,6 +8,7 @@ use halo2curves::{
 };
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use std::ops::{Deref, DerefMut};
 
 #[rustfmt::skip]
 pub(crate) mod map;
@@ -29,79 +30,139 @@ pub struct BaseTile {
     pub ord: u8,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-pub struct PermutationMatrix(Vec<Vec<u8>>);
+impl BaseTile {
+    pub fn lookup(x: &Fr) -> Option<Self> {
+        TILE_MAP.get(&x.to_bytes()).copied()
+    }
+}
 
-impl PermutationMatrix {
-    pub fn new(n: usize) -> Self {
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TilesDeck<const N: usize> {
+    #[serde(with = "serde_big_array::BigArray")]
+    pub tiles: [MaskedMessage; N],
+}
+
+impl TilesDeck<136> {
+    pub fn richi() -> Self {
+        let tiles = TILES[0..136]
+            .iter()
+            .map(|t| MaskedMessage::new(t.point.to_curve()))
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap();
+        Self { tiles }
+    }
+}
+
+impl TilesDeck<144> {
+    pub fn full() -> Self {
+        Self {
+            tiles: TILES.map(|t| MaskedMessage::new(t.point.to_curve())),
+        }
+    }
+}
+
+impl<const N: usize> TilesDeck<N> {
+    fn gen_randomness() -> [Fq; N] {
         let mut rng = rand::thread_rng();
-        let mut matrix = vec![vec![0; n]; n];
-        for i in 0..n {
+        [(); N].map(|_| Fq::from_bytes(&Fr::random(&mut rng).to_bytes()).unwrap())
+    }
+
+    pub fn shuffle_encrypt(&self, agg_pk: &G1) -> ShuffleEncryptResult<N> {
+        let randomness = Self::gen_randomness();
+        let mut tiles = self
+            .tiles
+            .into_iter()
+            .zip(randomness.iter())
+            .map(|(tile, randomness)| tile.remask(agg_pk, randomness))
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap();
+        let permutation = PermutationMatrix::new();
+        permutation.apply(&mut tiles);
+        ShuffleEncryptResult {
+            randomness,
+            tiles,
+            permutation,
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PermutationMatrix<const N: usize>(
+    #[serde(with = "serde_big_array::BigArray")] [MatrixRow<N>; N],
+);
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+struct MatrixRow<const N: usize>(#[serde(with = "serde_big_array::BigArray")] [u8; N]);
+
+impl<const N: usize> Deref for MatrixRow<N> {
+    type Target = [u8; N];
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<const N: usize> DerefMut for MatrixRow<N> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl<const N: usize> Default for PermutationMatrix<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<const N: usize> PermutationMatrix<N> {
+    #[allow(clippy::needless_range_loop)]
+    pub fn new() -> Self {
+        let mut rng = rand::thread_rng();
+        let mut matrix = [MatrixRow([0; N]); N];
+        for i in 0..N {
             matrix[i][i] = 1;
         }
-        for i in 0..n {
-            let j = rng.gen_range(0..n);
+        for i in 0..N {
+            let j = rng.gen_range(0..N);
             matrix.swap(i, j);
         }
         Self(matrix)
     }
 
     /// Apply the permutation matrix to a vector.
-    pub fn apply(&self, v: &mut [MaskedMessage]) {
-        assert_eq!(self.0.len(), v.len());
+    pub fn apply(&self, v: &mut [MaskedMessage; N]) {
         let temp = v.to_vec();
         for (i, row) in self.0.iter().enumerate() {
             v[i] = temp[row.iter().position(|&x| x == 1).unwrap()];
         }
     }
-}
 
-#[derive(Clone, Debug, Serialize)]
-pub struct ShuffleEncryptResult {
-    pub randomness: Vec<Fq>,
-    pub tiles: Vec<MaskedMessage>,
-    pub permutation: PermutationMatrix,
-}
-
-pub fn gen_randomness(n: usize) -> Vec<Fq> {
-    let mut rng = rand::thread_rng();
-    (0..n)
-        .map(|_| Fq::from_bytes(&Fr::random(&mut rng).to_bytes()).unwrap())
-        .collect()
-}
-
-pub fn get_richi_tiles() -> Vec<MaskedMessage> {
-    TILES[0..136]
-        .iter()
-        .map(|t| MaskedMessage::new(t.point.to_curve()))
-        .collect()
-}
-
-pub fn get_full_tiles() -> Vec<MaskedMessage> {
-    TILES
-        .iter()
-        .map(|t| MaskedMessage::new(t.point.to_curve()))
-        .collect()
-}
-
-pub fn shuffle_encrypt_deck(agg_pk: &G1, tiles: &[MaskedMessage]) -> ShuffleEncryptResult {
-    let randomness = gen_randomness(136);
-    let mut tiles: Vec<MaskedMessage> = tiles
-        .iter()
-        .zip(randomness.iter())
-        .map(|(tile, randomness)| tile.remask(agg_pk, randomness))
-        .collect();
-    let permutation = PermutationMatrix::new(136);
-    permutation.apply(&mut tiles);
-    ShuffleEncryptResult {
-        randomness,
-        tiles,
-        permutation,
+    /// Compress the permutation matrix into a vector of field elements.
+    ///
+    /// The vector is compressed by representing each row as a power of 2.
+    ///
+    /// For example, the identity matrix is represented as:
+    /// `[1, 2, 4, 8, 16, 32, 64, 128, 256 ... 2^N-1]`
+    pub fn compress(&self) -> [Fr; N] {
+        const F2: Fr = Fr::from_raw([2, 0, 0, 0]);
+        let mut buf = [Fr::ZERO; N];
+        for (i, row) in self.0.iter().enumerate() {
+            let pos = row.iter().position(|&x| x == 1).unwrap() as u64;
+            buf[i] = F2.pow_vartime([pos, 0, 0, 0])
+        }
+        buf
     }
 }
 
-pub fn lookup_tile(x: &Fr) -> Option<BaseTile> {
-    TILE_MAP.get(&x.to_bytes()).copied()
+#[derive(Clone, Debug, Serialize)]
+pub struct ShuffleEncryptResult<const N: usize> {
+    #[serde(with = "serde_big_array::BigArray")]
+    pub randomness: [Fq; N],
+    #[serde(with = "serde_big_array::BigArray")]
+    pub tiles: [MaskedMessage; N],
+    pub permutation: PermutationMatrix<N>,
 }
 
 #[test]
@@ -170,5 +231,5 @@ fn gen_tile_map() {
         map.build()
     )
     .unwrap();
-    write!(&mut file, ";\n").unwrap();
+    writeln!(&mut file, ";").unwrap();
 }

@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+compact_str.workspace = true
 zk-mahjong-core = { path = "../core" }
 halo2curves.workspace = true
 halo2_proofs.workspace = true
 ff.workspace = true
 smallvec.workspace = true
+
+[dev-dependencies]
+rand = "0.8"
