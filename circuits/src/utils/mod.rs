@@ -6,6 +6,8 @@ use halo2curves::bn256::Fr;
 
 pub mod constraint_builder;
 pub mod ec;
+#[cfg(test)]
+pub mod test;
 
 /// SubCircuit is a circuit that performs the verification of a specific part of
 /// the full Ethereum block verification.  The SubCircuit's interact with each

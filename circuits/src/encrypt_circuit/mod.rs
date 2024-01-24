@@ -41,7 +41,6 @@ pub struct ElGamalEncryptCircuitConfig {
     pub escalarmul_table: EscalarMulTable,
 }
 
-#[derive()]
 pub struct ElGamalEncryptCircuitConfigArgs {
     /// lookup table
     pub encrypt_table: ElGamalEncryptTable,
@@ -235,12 +234,6 @@ impl ElGamalEncryptCircuitConfig {
                         self.q_enable,
                         index,
                         || Value::known(Fr::ONE),
-                    )?;
-                    self.encrypt_table.generator.assign(
-                        "generator",
-                        &mut region,
-                        index,
-                        &G1Affine::generator(),
                     )?;
                     self.encrypt_table
                         .agg_pk

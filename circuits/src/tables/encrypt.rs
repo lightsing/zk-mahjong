@@ -13,8 +13,6 @@ use smallvec::smallvec;
 pub struct ElGamalEncryptTable {
     /// Whether the row is enabled.
     pub q_enable: Column<Fixed>,
-    /// The generator of the ElGamal encryption.
-    pub generator: PointColumns<Fixed>,
     /// The aggregate public key.
     pub agg_pk: PointColumns<Advice>,
     /// The index of the row.
@@ -37,7 +35,6 @@ impl ElGamalEncryptTable {
     /// Construct the ElGamal Encrypt table.
     pub fn construct(meta: &mut ConstraintSystem<Fr>) -> Self {
         let q_enable = meta.fixed_column();
-        let generator = PointColumns::<Fixed>::construct(meta);
         let agg_pk = PointColumns::<Advice>::construct(meta);
         let index = meta.advice_column();
         let cin = [
@@ -50,7 +47,6 @@ impl ElGamalEncryptTable {
         ];
         ElGamalEncryptTable {
             q_enable,
-            generator,
             agg_pk,
             index,
             cin,
@@ -85,8 +81,6 @@ impl LookupTable for ElGamalEncryptTable {
     fn columns(&self) -> super::Columns<Any> {
         smallvec![
             self.q_enable.into(),
-            self.generator.x.into(),
-            self.generator.y.into(),
             self.agg_pk.x.into(),
             self.agg_pk.y.into(),
             self.index.into(),
@@ -104,8 +98,6 @@ impl LookupTable for ElGamalEncryptTable {
     fn annotations(&self) -> super::Annotations {
         smallvec![
             "q_enable".into(),
-            "generator.x".into(),
-            "generator.y".into(),
             "agg_pk.x".into(),
             "agg_pk.y".into(),
             "index".into(),

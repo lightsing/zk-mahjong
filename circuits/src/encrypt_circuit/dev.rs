@@ -43,8 +43,8 @@ impl Circuit<Fr> for ElGamalEncryptTestCircuit {
         config: Self::Config,
         mut layouter: impl halo2_proofs::circuit::Layouter<Fr>,
     ) -> Result<(), halo2_proofs::plonk::Error> {
-        self.elgamal.synthesize_sub(&config.0, &mut layouter)?;
         self.escalarmul.synthesize_sub(&config.1, &mut layouter)?;
+        self.elgamal.synthesize_sub(&config.0, &mut layouter)?;
         Ok(())
     }
 }
