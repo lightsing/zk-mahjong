@@ -1,9 +1,12 @@
 use crate::{
-    gadgets::utils::{pow_of_two, Expr},
-    tables::{encrypt::ElGamalEncryptTable, fixed::Pow2Table, shuffle::ShuffleTable, LookupTable},
-    utils::{
-        constraint_builder::BaseConstraintBuilder, ec::PointColumns, SubCircuit, SubCircuitConfig,
+    gadgets::utils::{and, not, pow_of_two, Expr},
+    sub_circuits::{
+        tables::{
+            encrypt::ElGamalEncryptTable, fixed::Pow2Table, shuffle::ShuffleTable, LookupTable,
+        },
+        SubCircuit, SubCircuitConfig,
     },
+    utils::{constraint_builder::BaseConstraintBuilder, ec::PointColumns},
 };
 use ff::Field;
 use halo2_proofs::{
@@ -72,6 +75,22 @@ impl SubCircuitConfig for ShuffleCircuitConfig {
             PointColumns::<Advice>::construct(meta),
         ];
 
+        meta.create_gate("verify sum", |meta| {
+            let mut cb = BaseConstraintBuilder::default();
+
+            cb.require_equal(
+                "origin_index_pow2_sum::next = origin_index_pow2::next + origin_index_pow2_sum::cur",
+                meta.query_advice(origin_index_pow2_sum, Rotation::next()),
+                meta.query_advice(origin_index_pow2, Rotation::next())
+                    + meta.query_advice(origin_index_pow2_sum, Rotation::cur()),
+            );
+
+            cb.gate(and::expr([
+                meta.query_fixed(q_enable, Rotation::cur()),
+                not::expr(meta.query_fixed(is_last, Rotation::cur())),
+            ]))
+        });
+
         meta.create_gate("verify last sum", |meta| {
             let mut cb = BaseConstraintBuilder::default();
 
@@ -136,6 +155,7 @@ impl ShuffleCircuitConfig {
     pub fn assign_messages(
         &self,
         layouter: &mut impl Layouter<Fr>,
+        n: usize,
         messages: &[(G1Affine, G1Affine)],
         encrypted: &[(G1Affine, G1Affine)],
         permutation: &[usize],
@@ -155,8 +175,7 @@ impl ShuffleCircuitConfig {
                 self.shuffle_table.shuffled[0].name_columns(&mut region, "cout[0]");
                 self.shuffle_table.shuffled[1].name_columns(&mut region, "cout[1]");
 
-                let mut origin_index_pow2_sum = Fr::ZERO;
-                for (index, origin_index) in permutation.iter().copied().enumerate() {
+                for index in 0..n {
                     region.assign_fixed(
                         || "q_enable",
                         self.q_enable,
@@ -167,7 +186,7 @@ impl ShuffleCircuitConfig {
                         || "is_last",
                         self.is_last,
                         index,
-                        || Value::known(Fr::from(index == permutation.len() - 1)),
+                        || Value::known(Fr::from(index == n - 1)),
                     )?;
                     region.assign_fixed(
                         || "index",
@@ -187,6 +206,10 @@ impl ShuffleCircuitConfig {
                         index,
                         || Value::known(pow_of_two::<Fr>(index + 1) - Fr::ONE),
                     )?;
+                }
+
+                let mut origin_index_pow2_sum = Fr::ZERO;
+                for (index, origin_index) in permutation.iter().copied().enumerate() {
                     region.assign_advice(
                         || "origin_index",
                         self.origin_index,
@@ -229,13 +252,13 @@ impl ShuffleCircuitConfig {
 }
 
 #[derive(Default, Clone, Debug)]
-pub struct ShuffleCircuit {
+pub struct ShuffleCircuit<const N: usize> {
     pub messages: Vec<(G1Affine, G1Affine)>,
     pub encrypted: Vec<(G1Affine, G1Affine)>,
     pub permutation: Vec<usize>,
 }
 
-impl ShuffleCircuit {
+impl<const N: usize> ShuffleCircuit<N> {
     pub fn new(
         messages: Vec<(G1Affine, G1Affine)>,
         encrypted: Vec<(G1Affine, G1Affine)>,
@@ -249,7 +272,7 @@ impl ShuffleCircuit {
     }
 }
 
-impl SubCircuit for ShuffleCircuit {
+impl<const N: usize> SubCircuit for ShuffleCircuit<N> {
     type Config = ShuffleCircuitConfig;
 
     fn synthesize_sub(
@@ -257,6 +280,12 @@ impl SubCircuit for ShuffleCircuit {
         config: &Self::Config,
         layouter: &mut impl Layouter<Fr>,
     ) -> Result<(), Error> {
-        config.assign_messages(layouter, &self.messages, &self.encrypted, &self.permutation)
+        config.assign_messages(
+            layouter,
+            N,
+            &self.messages,
+            &self.encrypted,
+            &self.permutation,
+        )
     }
 }

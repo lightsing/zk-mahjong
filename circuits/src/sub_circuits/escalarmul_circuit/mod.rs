@@ -1,10 +1,10 @@
 use crate::{
     gadgets::utils::{and, not, Expr},
-    tables::escalarmul::{EscalarMulAssignRow, EscalarMulTable},
-    utils::{
-        constraint_builder::BaseConstraintBuilder, ec::ProjectivePointColumns, SubCircuit,
-        SubCircuitConfig,
+    sub_circuits::{
+        tables::escalarmul::{EscalarMulAssignRow, EscalarMulTable},
+        SubCircuit, SubCircuitConfig,
     },
+    utils::{constraint_builder::BaseConstraintBuilder, ec::ProjectivePointColumns},
 };
 use ff::Field;
 use halo2_proofs::{
@@ -236,8 +236,8 @@ impl EscalarMulCircuitConfig {
     pub fn assign_scalar_muls(
         &self,
         layouter: &mut impl Layouter<Fr>,
-        muls: &[(G1Affine, Fr)],
         max_muls: usize,
+        muls: &[(G1Affine, Fr)],
     ) -> Result<(), Error> {
         layouter.assign_region(
             || "exponentiation circuit",
@@ -343,20 +343,18 @@ impl EscalarMulCircuitConfig {
 }
 
 #[derive(Default, Clone, Debug)]
-pub struct EscalarMulCircuit {
+pub struct EscalarMulCircuit<const MAX_MULS: usize> {
     /// Multiplications
     pub muls: Vec<(G1Affine, Fr)>,
-    /// Max number of multiplications
-    pub max_muls: usize,
 }
 
-impl EscalarMulCircuit {
-    pub fn new(muls: Vec<(G1Affine, Fr)>, max_muls: usize) -> Self {
-        EscalarMulCircuit { muls, max_muls }
+impl<const MAX_MULS: usize> EscalarMulCircuit<MAX_MULS> {
+    pub fn new(muls: Vec<(G1Affine, Fr)>) -> Self {
+        EscalarMulCircuit { muls }
     }
 }
 
-impl SubCircuit for EscalarMulCircuit {
+impl<const MAX_MULS: usize> SubCircuit for EscalarMulCircuit<MAX_MULS> {
     type Config = EscalarMulCircuitConfig;
 
     fn unusable_rows() -> usize {
@@ -370,6 +368,6 @@ impl SubCircuit for EscalarMulCircuit {
         config: &Self::Config,
         layouter: &mut impl Layouter<Fr>,
     ) -> Result<(), Error> {
-        config.assign_scalar_muls(layouter, &self.muls, self.max_muls)
+        config.assign_scalar_muls(layouter, MAX_MULS, &self.muls)
     }
 }

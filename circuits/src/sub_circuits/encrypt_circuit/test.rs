@@ -1,16 +1,18 @@
 use super::ElGamalEncryptCircuit;
 use crate::{
-    encrypt_circuit::dev::ElGamalEncryptTestCircuit,
-    escalarmul_circuit::EscalarMulCircuit,
-    utils::{test::TestCase, unusable_rows, SubCircuit},
+    sub_circuits::{
+        encrypt_circuit::dev::ElGamalEncryptTestCircuit, escalarmul_circuit::EscalarMulCircuit,
+        SubCircuit,
+    },
+    utils::test::{unusable_rows, TestCase},
 };
 use halo2_proofs::dev::MockProver;
 
 #[test]
 fn copy_circuit_unusable_rows() {
     assert_eq!(
-        ElGamalEncryptCircuit::unusable_rows(),
-        unusable_rows::<ElGamalEncryptTestCircuit>(),
+        ElGamalEncryptCircuit::<144>::unusable_rows(),
+        unusable_rows::<ElGamalEncryptTestCircuit::<144>>(),
     )
 }
 
@@ -20,12 +22,12 @@ fn test_elgamal_encrypt_circuit() {
 
     let test_case = TestCase::new(SIZE);
 
-    let elgamal = ElGamalEncryptCircuit::new(
+    let elgamal = ElGamalEncryptCircuit::<SIZE>::new(
         test_case.agg_pk,
         test_case.randomness.clone(),
         test_case.messages.clone(),
     );
-    let escalarmul = EscalarMulCircuit::new(test_case.muls.clone(), SIZE * 2);
+    let escalarmul = EscalarMulCircuit::<{ SIZE * 2 }>::new(test_case.muls.clone());
     let test_circuit = ElGamalEncryptTestCircuit {
         elgamal,
         escalarmul,

@@ -1,6 +1,6 @@
-pub mod encrypt_circuit;
-pub mod escalarmul_circuit;
+#![feature(generic_const_exprs)]
+#![allow(incomplete_features)]
+
 pub mod gadgets;
-pub mod shuffle_circuit;
-pub mod tables;
+pub mod sub_circuits;
 pub mod utils;

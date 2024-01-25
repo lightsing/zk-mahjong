@@ -1,4 +1,4 @@
-use crate::{
+use crate::sub_circuits::{
     encrypt_circuit::{
         ElGamalEncryptCircuit, ElGamalEncryptCircuitConfig, ElGamalEncryptCircuitConfigArgs,
     },
@@ -7,7 +7,7 @@ use crate::{
         encrypt::ElGamalEncryptTable, escalarmul::EscalarMulTable, fixed::Pow2Table,
         shuffle::ShuffleTable,
     },
-    utils::{SubCircuit, SubCircuitConfig},
+    SubCircuit, SubCircuitConfig,
 };
 
 use super::{ShuffleCircuit, ShuffleCircuitConfig, ShuffleCircuitConfigArgs};
@@ -18,10 +18,13 @@ use halo2_proofs::{
 use halo2curves::bn256::Fr;
 
 #[derive(Default)]
-pub struct ShuffleTestCircuit {
-    pub elgamal: ElGamalEncryptCircuit,
-    pub escalarmul: EscalarMulCircuit,
-    pub shuffle: ShuffleCircuit,
+pub struct ShuffleTestCircuit<const N: usize>
+where
+    [(); N * 2]:,
+{
+    pub elgamal: ElGamalEncryptCircuit<N>,
+    pub escalarmul: EscalarMulCircuit<{ N * 2 }>,
+    pub shuffle: ShuffleCircuit<N>,
 }
 
 #[derive(Clone)]
@@ -32,7 +35,10 @@ pub struct ShuffleTestCircuitConfig {
     pub shuffle: ShuffleCircuitConfig,
 }
 
-impl Circuit<Fr> for ShuffleTestCircuit {
+impl<const N: usize> Circuit<Fr> for ShuffleTestCircuit<N>
+where
+    [(); N * 2]:,
+{
     type Config = ShuffleTestCircuitConfig;
 
     type FloorPlanner = SimpleFloorPlanner;

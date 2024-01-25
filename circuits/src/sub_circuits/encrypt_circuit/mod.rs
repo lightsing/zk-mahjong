@@ -1,14 +1,16 @@
 use crate::{
     gadgets::utils::{not, Expr},
-    tables::{
-        encrypt::{ElGamalEncryptAssignRow, ElGamalEncryptTable},
-        escalarmul::EscalarMulTable,
-        LookupTable,
+    sub_circuits::{
+        tables::{
+            encrypt::{ElGamalEncryptAssignRow, ElGamalEncryptTable},
+            escalarmul::EscalarMulTable,
+            LookupTable,
+        },
+        SubCircuit, SubCircuitConfig,
     },
     utils::{
         constraint_builder::BaseConstraintBuilder,
         ec::{PointColumns, ProjectivePointColumns},
-        SubCircuit, SubCircuitConfig,
     },
 };
 use ff::Field;
@@ -198,6 +200,7 @@ impl ElGamalEncryptCircuitConfig {
     pub fn assign_messages(
         &self,
         layouter: &mut impl Layouter<Fr>,
+        n: usize,
         agg_pk: &G1Affine,
         r: &[Fr],
         messages: &[(G1Affine, G1Affine)],
@@ -220,6 +223,21 @@ impl ElGamalEncryptCircuitConfig {
                 self.encrypt_table.cout[0].name_columns(&mut region, "c_out0");
                 self.encrypt_table.cout[1].name_columns(&mut region, "c_out1");
 
+                for index in 0..n {
+                    region.assign_fixed(
+                        || "q_enable",
+                        self.q_enable,
+                        index,
+                        || Value::known(Fr::ONE),
+                    )?;
+                    region.assign_fixed(
+                        || "index",
+                        self.encrypt_table.index,
+                        index,
+                        || Value::known(Fr::from(index as u64)),
+                    )?;
+                }
+
                 let assignments = ElGamalEncryptTable::assignments(agg_pk, r, messages);
                 for ElGamalEncryptAssignRow {
                     index,
@@ -229,21 +247,9 @@ impl ElGamalEncryptCircuitConfig {
                     cout1,
                 } in assignments
                 {
-                    region.assign_fixed(
-                        || "q_enable",
-                        self.q_enable,
-                        index,
-                        || Value::known(Fr::ONE),
-                    )?;
                     self.encrypt_table
                         .agg_pk
                         .assign("agg_pk", &mut region, index, agg_pk)?;
-                    region.assign_advice(
-                        || "index",
-                        self.encrypt_table.index,
-                        index,
-                        || Value::known(Fr::from(index as u64)),
-                    )?;
                     self.encrypt_table.cin[0].assign(
                         "c_in",
                         &mut region,
@@ -293,7 +299,7 @@ impl ElGamalEncryptCircuitConfig {
 }
 
 #[derive(Default, Clone, Debug)]
-pub struct ElGamalEncryptCircuit {
+pub struct ElGamalEncryptCircuit<const N: usize> {
     /// aggregate public key
     pub agg_pk: G1Affine,
     /// randomness
@@ -301,7 +307,7 @@ pub struct ElGamalEncryptCircuit {
     pub messages: Vec<(G1Affine, G1Affine)>,
 }
 
-impl ElGamalEncryptCircuit {
+impl<const N: usize> ElGamalEncryptCircuit<N> {
     pub fn new(agg_pk: G1Affine, r: Vec<Fr>, messages: Vec<(G1Affine, G1Affine)>) -> Self {
         Self {
             agg_pk,
@@ -311,7 +317,7 @@ impl ElGamalEncryptCircuit {
     }
 }
 
-impl SubCircuit for ElGamalEncryptCircuit {
+impl<const N: usize> SubCircuit for ElGamalEncryptCircuit<N> {
     type Config = ElGamalEncryptCircuitConfig;
 
     fn unusable_rows() -> usize {
@@ -325,6 +331,6 @@ impl SubCircuit for ElGamalEncryptCircuit {
         config: &Self::Config,
         layouter: &mut impl Layouter<Fr>,
     ) -> Result<(), Error> {
-        config.assign_messages(layouter, &self.agg_pk, &self.r, &self.messages)
+        config.assign_messages(layouter, N, &self.agg_pk, &self.r, &self.messages)
     }
 }

@@ -1,16 +1,19 @@
 use crate::{
-    encrypt_circuit::ElGamalEncryptCircuit,
-    escalarmul_circuit::EscalarMulCircuit,
-    shuffle_circuit::{dev::ShuffleTestCircuit, ShuffleCircuit},
-    utils::{test::TestCase, unusable_rows, SubCircuit},
+    sub_circuits::{
+        encrypt_circuit::ElGamalEncryptCircuit,
+        escalarmul_circuit::EscalarMulCircuit,
+        shuffle_circuit::{dev::ShuffleTestCircuit, ShuffleCircuit},
+        SubCircuit,
+    },
+    utils::test::{unusable_rows, TestCase},
 };
 use halo2_proofs::dev::MockProver;
 
 #[test]
 fn shuffle_circuit_unusable_rows() {
     assert_eq!(
-        ShuffleCircuit::unusable_rows(),
-        unusable_rows::<ShuffleTestCircuit>(),
+        ShuffleCircuit::<144>::unusable_rows(),
+        unusable_rows::<ShuffleTestCircuit::<144>>(),
     )
 }
 
@@ -25,8 +28,8 @@ fn test_shuffle_circuit() {
         test_case.randomness.clone(),
         test_case.messages.clone(),
     );
-    let escalarmul = EscalarMulCircuit::new(test_case.muls.clone(), SIZE * 2);
-    let shuffle = ShuffleCircuit::new(
+    let escalarmul = EscalarMulCircuit::<{ SIZE * 2 }>::new(test_case.muls.clone());
+    let shuffle = ShuffleCircuit::<SIZE>::new(
         test_case.messages.clone(),
         test_case.encrypted.clone(),
         test_case.permutation.clone(),

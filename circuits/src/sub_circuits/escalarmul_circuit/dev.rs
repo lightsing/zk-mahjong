@@ -1,12 +1,12 @@
 use super::{EscalarMulCircuit, EscalarMulCircuitConfig, EscalarMulCircuitConfigArgs};
-use crate::{
+use crate::sub_circuits::{
     tables::escalarmul::EscalarMulTable,
-    utils::{SubCircuit, SubCircuitConfig},
+    {SubCircuit, SubCircuitConfig},
 };
 use halo2_proofs::{circuit::SimpleFloorPlanner, plonk::Circuit};
 use halo2curves::bn256::Fr;
 
-impl Circuit<Fr> for EscalarMulCircuit {
+impl<const MAX_MULS: usize> Circuit<Fr> for EscalarMulCircuit<MAX_MULS> {
     type Config = EscalarMulCircuitConfig;
 
     type FloorPlanner = SimpleFloorPlanner;

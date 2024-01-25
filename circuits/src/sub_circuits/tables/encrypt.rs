@@ -13,10 +13,10 @@ use smallvec::smallvec;
 pub struct ElGamalEncryptTable {
     /// Whether the row is enabled.
     pub q_enable: Column<Fixed>,
+    /// The index of the row.
+    pub index: Column<Fixed>,
     /// The aggregate public key.
     pub agg_pk: PointColumns<Advice>,
-    /// The index of the row.
-    pub index: Column<Advice>,
     /// The message to encrypt.
     pub cin: [PointColumns<Advice>; 2],
     /// The encrypted message.
@@ -35,8 +35,8 @@ impl ElGamalEncryptTable {
     /// Construct the ElGamal Encrypt table.
     pub fn construct(meta: &mut ConstraintSystem<Fr>) -> Self {
         let q_enable = meta.fixed_column();
+        let index = meta.fixed_column();
         let agg_pk = PointColumns::<Advice>::construct(meta);
-        let index = meta.advice_column();
         let cin = [
             PointColumns::<Advice>::construct(meta),
             PointColumns::<Advice>::construct(meta),
