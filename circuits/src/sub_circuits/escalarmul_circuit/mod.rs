@@ -125,7 +125,7 @@ impl SubCircuitConfig for EscalarMulCircuitConfig {
             );
 
             // result starts as (0, 1, 0) = identity
-            for (col, val) in result.columns().zip([0, 1, 0]) {
+            for (col, val) in result.columns().into_iter().zip([0, 1, 0]) {
                 cb.require_equal(
                     "result starts as (0, 1, 0)",
                     meta.query_advice(col, Rotation::cur()),
@@ -205,7 +205,9 @@ impl SubCircuitConfig for EscalarMulCircuitConfig {
                 not::expr(meta.query_advice(scalar_bit, Rotation::cur())),
                 |cb| {
                     // result::next = result2::cur
-                    for (result_col, result2_col) in result.columns().zip(result2.columns()) {
+                    for (result_col, result2_col) in
+                        result.columns().into_iter().zip(result2.columns())
+                    {
                         cb.require_equal(
                             "result::next = result2::cur",
                             meta.query_advice(result_col, Rotation::next()),

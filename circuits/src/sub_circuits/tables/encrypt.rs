@@ -45,6 +45,10 @@ impl ElGamalEncryptTable {
             PointColumns::<Advice>::construct(meta),
             PointColumns::<Advice>::construct(meta),
         ];
+
+        meta.enable_equality(agg_pk.x);
+        meta.enable_equality(agg_pk.y);
+
         ElGamalEncryptTable {
             q_enable,
             agg_pk,

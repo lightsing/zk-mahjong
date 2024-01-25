@@ -2,9 +2,10 @@ use super::constraint_builder::BaseConstraintBuilder;
 use crate::gadgets::utils::{select, Expr};
 use ff::{Field, PrimeField};
 use halo2_proofs::{
-    circuit::{Region, Value},
+    circuit::{AssignedCell, Region, Value},
     plonk::{
-        Advice, Any, Column, ColumnType, ConstraintSystem, Error, Expression, Fixed, VirtualCells,
+        Advice, Any, Column, ColumnType, ConstraintSystem, Error, Expression, Fixed, Instance,
+        VirtualCells,
     },
 };
 use halo2curves::{
@@ -78,8 +79,8 @@ impl ProjectivePointColumns {
         region.name_column(|| format!("{}.z_inv", name), self.z_inv);
     }
 
-    pub fn columns(&self) -> impl Iterator<Item = Column<Advice>> {
-        [self.x, self.y, self.z].into_iter()
+    pub fn columns(&self) -> [Column<Advice>; 3] {
+        [self.x, self.y, self.z]
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -212,6 +213,11 @@ impl PointColumns<Advice> {
         PointColumns { x, y }
     }
 
+    pub fn enable_equality<F: PrimeField>(&self, meta: &mut ConstraintSystem<F>) {
+        meta.enable_equality(self.x);
+        meta.enable_equality(self.y);
+    }
+
     pub fn assign(
         &self,
         point_name: &str,
@@ -232,6 +238,31 @@ impl PointColumns<Advice> {
             || Value::known(point.y),
         )?;
         Ok(())
+    }
+
+    pub fn assign_from_instance(
+        &self,
+        point_name: &str,
+        region: &mut Region<Fr>,
+        instance: Column<Instance>,
+        row: usize,
+        offset: usize,
+    ) -> Result<(AssignedCell<Fr, Fr>, AssignedCell<Fr, Fr>), Error> {
+        let x = region.assign_advice_from_instance(
+            || format!("{point_name}.x at offset {}", offset),
+            instance,
+            row,
+            self.x,
+            offset,
+        )?;
+        let y = region.assign_advice_from_instance(
+            || format!("{point_name}.y at offset {}", offset),
+            instance,
+            row + 1,
+            self.y,
+            offset,
+        )?;
+        Ok((x, y))
     }
 }
 

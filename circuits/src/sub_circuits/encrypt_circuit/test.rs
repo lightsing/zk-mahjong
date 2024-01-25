@@ -32,6 +32,11 @@ fn test_elgamal_encrypt_circuit() {
         elgamal,
         escalarmul,
     };
-    let prover = MockProver::run(17, &test_circuit, vec![]).unwrap();
+    let prover = MockProver::run(
+        17,
+        &test_circuit,
+        vec![vec![test_case.agg_pk.x, test_case.agg_pk.y]],
+    )
+    .unwrap();
     prover.assert_satisfied()
 }

@@ -16,7 +16,7 @@ use crate::{
 use ff::Field;
 use halo2_proofs::{
     circuit::{Layouter, Value},
-    plonk::{Advice, Column, ConstraintSystem, Error, Expression, Fixed},
+    plonk::{Advice, Column, ConstraintSystem, Error, Expression, Fixed, Instance},
     poly::Rotation,
 };
 use halo2curves::{bn256::Fr, group::Curve};
@@ -30,6 +30,7 @@ mod test;
 #[derive(Copy, Clone, Debug)]
 pub struct ElGamalEncryptCircuitConfig {
     pub q_enable: Column<Fixed>,
+    pub inputs: Column<Instance>,
     /// randomness
     pub r: Column<Advice>,
     /// r * G
@@ -61,6 +62,7 @@ impl SubCircuitConfig for ElGamalEncryptCircuitConfig {
         }: Self::ConfigArgs,
     ) -> Self {
         let q_enable = encrypt_table.q_enable;
+        let inputs = meta.instance_column();
         let r = meta.advice_column();
         let r_g = PointColumns::<Advice>::construct(meta);
         let r_h = PointColumns::<Advice>::construct(meta);
@@ -72,6 +74,8 @@ impl SubCircuitConfig for ElGamalEncryptCircuitConfig {
             ProjectivePointColumns::construct(meta),
             ProjectivePointColumns::construct(meta),
         ];
+
+        meta.enable_equality(inputs);
 
         let g = G1Affine::generator();
 
@@ -185,6 +189,7 @@ impl SubCircuitConfig for ElGamalEncryptCircuitConfig {
 
         ElGamalEncryptCircuitConfig {
             q_enable,
+            inputs,
             r,
             r_g,
             r_h,
@@ -247,9 +252,20 @@ impl ElGamalEncryptCircuitConfig {
                     cout1,
                 } in assignments
                 {
-                    self.encrypt_table
-                        .agg_pk
-                        .assign("agg_pk", &mut region, index, agg_pk)?;
+                    if index == 0 {
+                        self.encrypt_table.agg_pk.assign_from_instance(
+                            "agg_pk",
+                            &mut region,
+                            self.inputs,
+                            0,
+                            0,
+                        )?;
+                    } else {
+                        self.encrypt_table
+                            .agg_pk
+                            .assign("agg_pk", &mut region, index, agg_pk)?;
+                    }
+
                     self.encrypt_table.cin[0].assign(
                         "c_in",
                         &mut region,
@@ -300,7 +316,6 @@ impl ElGamalEncryptCircuitConfig {
 
 #[derive(Default, Clone, Debug)]
 pub struct ElGamalEncryptCircuit<const N: usize> {
-    /// aggregate public key
     pub agg_pk: G1Affine,
     /// randomness
     pub r: Vec<Fr>,
