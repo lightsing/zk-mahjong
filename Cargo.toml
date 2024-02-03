@@ -1,11 +1,21 @@
 [workspace]
-members = ["core", "circuits"]
+members = ["core", "circuits", "gadgets"]
 resolver = "2"
 
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
 [workspace.dependencies]
-ff = { version = "0.13" }
-halo2curves = { version = "0.6.0", features = ["derive_serde"] }
+ff = { version = "0.13", features = ["derive"] }
+#halo2curves = { git = "https://github.com/lightsing/halo2curves", branch = "goldilocks", features = ["derive_serde"] }
+halo2curves = { path = "../halo2curves", features = ["derive_serde"] }
 halo2_proofs = { git = "https://github.com/privacy-scaling-explorations/halo2", rev = "73408a140737d8336490452193b21f5a7a94e7de" }
+itertools = "0.12"
+num-bigint = "0.4"
+rand = "0.8"
+subtle = "2.5"
 smallvec = { version = "2.0.0-alpha.3", features = [
     "specialization",
     "may_dangle",

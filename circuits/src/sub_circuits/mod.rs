@@ -4,9 +4,9 @@ use halo2_proofs::{
 };
 use halo2curves::bn256::Fr;
 
-pub mod encrypt_circuit;
+//pub mod encrypt_circuit;
 pub mod escalarmul_circuit;
-pub mod shuffle_circuit;
+//pub mod shuffle_circuit;
 pub mod tables;
 
 /// SubCircuit is a circuit that performs the verification of a specific part of

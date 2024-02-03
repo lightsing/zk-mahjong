@@ -7,10 +7,10 @@ use halo2_proofs::{
 use halo2curves::bn256::Fr;
 use smallvec::SmallVec;
 
-pub mod encrypt;
+//pub mod encrypt;
 pub mod escalarmul;
 pub mod fixed;
-pub mod shuffle;
+//pub mod shuffle;
 
 const MAX_INLINE_TABLE_COLUMNS: usize = 8;
 pub type Annotations = SmallVec<CompactString, MAX_INLINE_TABLE_COLUMNS>;

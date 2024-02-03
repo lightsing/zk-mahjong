@@ -1,0 +1,15 @@
+[package]
+name = "gadgets"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ff.workspace = true
+halo2curves.workspace = true
+halo2_proofs.workspace = true
+itertools.workspace = true
+num-bigint.workspace = true
+
+[dev-dependencies]
+rand.workspace = true

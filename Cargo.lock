@@ -195,6 +195,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c"
 
 [[package]]
+name = "gadgets"
+version = "0.1.0"
+dependencies = [
+ "ff",
+ "halo2_proofs",
+ "halo2curves 0.6.0",
+ "itertools",
+ "num-bigint 0.4.4",
+ "rand",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -234,7 +246,7 @@ dependencies = [
  "blake2b_simd",
  "ff",
  "group",
- "halo2curves",
+ "halo2curves 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand_chacha",
  "rand_core",
  "rayon",
@@ -245,8 +257,6 @@ dependencies = [
 [[package]]
 name = "halo2curves"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3675880dc0cc7cd468943266297198a28f88210ba60ca5e0e04d121edf86b46"
 dependencies = [
  "blake2b_simd",
  "ff",
@@ -268,12 +278,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "halo2curves"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3675880dc0cc7cd468943266297198a28f88210ba60ca5e0e04d121edf86b46"
+dependencies = [
+ "blake2b_simd",
+ "ff",
+ "group",
+ "lazy_static",
+ "num-bigint 0.4.4",
+ "num-traits",
+ "pairing",
+ "pasta_curves",
+ "paste",
+ "rand",
+ "rand_core",
+ "rayon",
+ "static_assertions",
+ "subtle",
+]
+
+[[package]]
 name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "itertools"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
+dependencies = [
+ "either",
 ]
 
 [[package]]
@@ -715,7 +756,7 @@ dependencies = [
  "compact_str",
  "ff",
  "halo2_proofs",
- "halo2curves",
+ "halo2curves 0.6.0",
  "rand",
  "smallvec",
  "zk-mahjong-core",
@@ -726,7 +767,7 @@ name = "zk-mahjong-core"
 version = "0.1.0"
 dependencies = [
  "ff",
- "halo2curves",
+ "halo2curves 0.6.0",
  "hex",
  "phf",
  "phf_codegen",
